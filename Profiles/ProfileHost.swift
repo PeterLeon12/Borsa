@@ -1,18 +1,46 @@
-//
-//  ProfileHost.swift
-//  LandMarks
-//
-//  Created by Timis Petre Leon on 24.09.2024.
-//
+
 
 import SwiftUI
 
 struct ProfileHost: View {
+    @Environment(\.editMode) var editMode
+    @Environment(ModelData.self) var modelData
+    @State private var draftProfile = Profile.default
+    
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        VStack(alignment: .leading, spacing: 20) {
+            HStack {
+                if editMode?.wrappedValue == .active {
+                    Button("Cancel", role: .cancel) {
+                        draftProfile = modelData.profile
+                        editMode?.animation().wrappedValue = .inactive
+                    }
+                }
+                Spacer()
+                EditButton()
+            }
+            
+            if editMode?.wrappedValue == .inactive {
+                ProfileSummary(profile: modelData.profile)
+            } else {
+                ProfileEditor(profile: $draftProfile)
+                    .onAppear {
+                        draftProfile = modelData.profile
+                    }
+                    .onDisappear {
+                        modelData.profile = draftProfile
+                    }
+            }
+        }
+        .padding()
     }
 }
 
+
 #Preview {
     ProfileHost()
+        .environment(ModelData())
 }
+
+

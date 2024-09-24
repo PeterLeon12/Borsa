@@ -1,18 +1,29 @@
-//
-//  CircleImage.swift
-//  LandMarks
-//
-//  Created by Timis Petre Leon on 24.09.2024.
-//
-
 import SwiftUI
 
 struct CircleImage: View {
+    var image: Image
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        ZStack {
+            // Background blurred image
+            image
+                .resizable()
+                .blur(radius: 10) // Apply a blur effect
+                .ignoresSafeArea()
+                .frame(width: 420, height: 360)
+
+            // Foreground circular image
+            image
+                .clipShape(Circle())
+                .overlay {
+                    Circle().stroke(.white, lineWidth: 1)
+                }
+                .shadow(radius: 7)
+                .frame(width: 250, height: 250) // Set the size of the circular image
+        }
     }
 }
 
 #Preview {
-    CircleImage()
+    CircleImage(image: Image("turtlerock"))
 }

@@ -1,18 +1,41 @@
-//
-//  LandmarkList.swift
-//  LandMarks
-//
-//  Created by Timis Petre Leon on 24.09.2024.
-//
+
 
 import SwiftUI
 
 struct LandmarkList: View {
+    @Environment(ModelData.self) var modelData
+    @State private var showFavoritesOnly = false
+
+    var filteredLandmarks: [Landmark] {
+        modelData.landmarks.filter { landmark in
+            (!showFavoritesOnly || landmark.isFavorite)
+        }
+    }
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        NavigationSplitView {
+            List {
+                Toggle(isOn: $showFavoritesOnly) {
+                    Text("Favorites only")
+                }
+
+                ForEach(filteredLandmarks) { landmark in
+                    NavigationLink {
+                        LandmarkDetail(landmark: landmark)
+                    } label: {
+                        LandmarkRow(landmark: landmark)
+                    }
+                }
+            }
+            .animation(.default, value: filteredLandmarks)
+            .navigationTitle("Landmarks")
+        } detail: {
+            Text("Select a Landmark")
+        }
     }
 }
 
 #Preview {
     LandmarkList()
+        .environment(ModelData())
 }

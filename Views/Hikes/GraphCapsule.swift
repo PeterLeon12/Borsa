@@ -1,18 +1,35 @@
-//
-//  GraphCapsule.swift
-//  LandMarks
-//
-//  Created by Timis Petre Leon on 24.09.2024.
-//
+
 
 import SwiftUI
 
-struct GraphCapsule: View {
+struct GraphCapsule: View, Equatable {
+    var index: Int
+    var color: Color
+    var height: CGFloat
+    var range: Range<Double>
+    var overallRange: Range<Double>
+
+    var heightRatio: CGFloat {
+        max(CGFloat(magnitude(of: range) / magnitude(of: overallRange)), 0.15)
+    }
+
+    var offsetRatio: CGFloat {
+        CGFloat((range.lowerBound - overallRange.lowerBound) / magnitude(of: overallRange))
+    }
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Capsule()
+            .fill(color)
+            .frame(height: height * heightRatio)
+            .offset(x: 0, y: height * -offsetRatio)
     }
 }
 
 #Preview {
-    GraphCapsule()
+    GraphCapsule(
+        index: 0,
+        color: .blue,
+        height: 150,
+        range: 10..<50,
+        overallRange: 0..<100)
 }
