@@ -1,4 +1,4 @@
-
+/*
 
 import SwiftUI
 
@@ -57,4 +57,4 @@ struct HikeView: View {
             .padding()
         Spacer()
     }
-}
+ }*/

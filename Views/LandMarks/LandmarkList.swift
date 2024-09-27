@@ -1,41 +1,63 @@
-
-
 import SwiftUI
 
 struct LandmarkList: View {
-    @Environment(ModelData.self) var modelData
+    @FetchRequest(
+        entity: Landmark.entity(),
+        sortDescriptors: [] // Optionally add sort descriptors here
+    ) var landmarks: FetchedResults<Landmark>
+
     @State private var showFavoritesOnly = false
+    @State private var showAddLandmarkView = false
+
+    @Environment(\.managedObjectContext) private var viewContext
 
     var filteredLandmarks: [Landmark] {
-        modelData.landmarks.filter { landmark in
+        landmarks.filter { landmark in
             (!showFavoritesOnly || landmark.isFavorite)
         }
     }
 
     var body: some View {
-        NavigationSplitView {
-            List {
-                Toggle(isOn: $showFavoritesOnly) {
-                    Text("Favorites only")
-                }
+        NavigationView {
+            VStack {
+                if landmarks.isEmpty {
+                    VStack {
+                        Text("No landmarks available")
+                            .foregroundColor(.gray)
+                            .font(.headline)
 
-                ForEach(filteredLandmarks) { landmark in
-                    NavigationLink {
-                        LandmarkDetail(landmark: landmark)
-                    } label: {
-                        LandmarkRow(landmark: landmark)
+                        // Button to add a landmark if none exist
+                        Button(action: {
+                            showAddLandmarkView.toggle()
+                        }) {
+                            Label("Add Landmark", systemImage: "plus.circle")
+                                .font(.title)
+                                .foregroundColor(.blue)
+                        }
+                        .sheet(isPresented: $showAddLandmarkView) {
+                            AddLandmarkView()
+                            // No need to pass viewContext, it's already in the environment
+                        }
                     }
+                } else {
+                    List {
+                        Toggle(isOn: $showFavoritesOnly) {
+                            Text("Favorites only")
+                        }
+
+                        ForEach(filteredLandmarks) { landmark in
+                            NavigationLink(destination: LandmarkDetail(landmark: landmark)) {
+                                LandmarkRow(landmark: landmark)
+                            }
+                        }
+                    }
+                    .navigationTitle("Landmarks")
                 }
             }
-            .animation(.default, value: filteredLandmarks)
-            .navigationTitle("Landmarks")
-        } detail: {
-            Text("Select a Landmark")
         }
     }
 }
-
 #Preview {
     LandmarkList()
-        .environment(ModelData())
+        .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
 }

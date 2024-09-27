@@ -1,42 +1,50 @@
-
 import Foundation
+import CoreData
 
-@Observable
-class ModelData {
-    var landmarks: [Landmark] = load("landmarkData.json")
-    var hikes: [Hike] = load("hikeData.json")
-    var profile = Profile.default
+class ModelData: ObservableObject {
+    // Managed object context for Core Data
+    private let viewContext = PersistenceController.shared.container.viewContext
+    
+    // Fetching landmarks and hikes from Core Data
+    @Published var landmarks: [Landmark] = []
+    @Published var hikes: [Hike] = []
+    @Published var profile = Profile.default
 
+    init() {
+        loadLandmarks()
+       // loadHikes()
+    }
+
+    // Fetch landmarks from Core Data
+    private func loadLandmarks() {
+        let fetchRequest: NSFetchRequest<Landmark> = Landmark.fetchRequest()
+        do {
+            landmarks = try viewContext.fetch(fetchRequest)
+        } catch {
+            print("Error fetching landmarks: \(error)")
+        }
+    }
+
+    // Fetch hikes from Core Data (assuming you have Hike entity in Core Data)
+   /* private func loadHikes() {
+        let fetchRequest: NSFetchRequest<Hike> = Hike.fetchRequest()
+        do {
+            hikes = try viewContext.fetch(fetchRequest)
+        } catch {
+            print("Error fetching hikes: \(error)")
+        }
+    } */
+
+    // Filter featured landmarks
     var features: [Landmark] {
         landmarks.filter { $0.isFeatured }
     }
 
+    // Group landmarks by category
     var categories: [String: [Landmark]] {
         Dictionary(
-            grouping: landmarks,
-            by: { $0.category.rawValue }
+            grouping: landmarks.compactMap { $0 },
+            by: { $0.category ?? "Unknown" }
         )
-    }
-}
-
-func load<T: Decodable>(_ filename: String) -> T {
-    let data: Data
-
-    guard let file = Bundle.main.url(forResource: filename, withExtension: nil)
-        else {
-            fatalError("Couldn't find \(filename) in main bundle.")
-    }
-
-    do {
-        data = try Data(contentsOf: file)
-    } catch {
-        fatalError("Couldn't load \(filename) from main bundle:\n\(error)")
-    }
-
-    do {
-        let decoder = JSONDecoder()
-        return try decoder.decode(T.self, from: data)
-    } catch {
-        fatalError("Couldn't parse \(filename) as \(T.self):\n\(error)")
     }
 }

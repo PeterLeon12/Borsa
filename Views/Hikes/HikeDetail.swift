@@ -1,4 +1,4 @@
-
+/*
 
 import SwiftUI
 
@@ -37,4 +37,4 @@ struct HikeDetail: View {
 
 #Preview {
     HikeDetail(hike: ModelData().hikes[0])
-}
+ }*/

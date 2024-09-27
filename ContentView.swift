@@ -1,5 +1,3 @@
-
-
 import SwiftUI
 
 struct ContentView: View {
@@ -8,6 +6,7 @@ struct ContentView: View {
     enum Tab {
         case featured
         case list
+        case addLandmark // New tab case for adding a landmark
     }
 
     var body: some View {
@@ -23,11 +22,17 @@ struct ContentView: View {
                     Label("List", systemImage: "list.bullet")
                 }
                 .tag(Tab.list)
+
+            // New tab to add a landmark
+            AddLandmarkView()
+                .tabItem {
+                    Label("Add Landmark", systemImage: "plus.circle")
+                }
+                .tag(Tab.addLandmark)
         }
     }
 }
 
 #Preview {
     ContentView()
-        .environment(ModelData())
 }

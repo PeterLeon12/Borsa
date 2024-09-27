@@ -1,3 +1,4 @@
+/*
 import SwiftUI
 
 
@@ -22,3 +23,4 @@ struct HikeBadge: View {
 #Preview {
     HikeBadge(name: "Preview Testing")
 }
+ */

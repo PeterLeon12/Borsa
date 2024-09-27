@@ -1,15 +1,15 @@
-
-
 import SwiftUI
 
 @main
 struct LandmarksApp: App {
-    @State private var modelData = ModelData()
+    // Create a persistence controller
+    let persistenceController = PersistenceController.shared
 
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environment(modelData)
+                // Inject the viewContext into the environment
+                .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }
 }

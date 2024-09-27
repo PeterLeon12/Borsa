@@ -1,35 +1,52 @@
-
 import SwiftUI
 
 struct CategoryHome: View {
-    @Environment(ModelData.self) var modelData
+    // Fetch landmarks from Core Data
+    @FetchRequest(
+        entity: Landmark.entity(),
+        sortDescriptors: []
+    ) var landmarks: FetchedResults<Landmark>
+
     @State private var showingProfile = false
 
+    // Featured landmarks
+    var features: [Landmark] {
+        landmarks.filter { $0.isFeatured }
+    }
+
+    // Group landmarks by category
+    var categories: [String: [Landmark]] {
+        Dictionary(
+            grouping: landmarks.compactMap { $0 },
+            by: { $0.category ?? "Unknown" }
+        )
+    }
 
     var body: some View {
         NavigationSplitView {
             List {
-                PageView(pages: modelData.features.map { FeatureCard(landmark: $0) })
+                // Show featured landmarks in a horizontal scroll view
+                PageView(pages: features.map { FeatureCard(landmark: $0) })
                     .listRowInsets(EdgeInsets())
 
-                ForEach(modelData.categories.keys.sorted(), id: \.self) { key in
-                    CategoryRow(categoryName: key, items: modelData.categories[key]!)
+                // Show landmarks grouped by category
+                ForEach(categories.keys.sorted(), id: \.self) { key in
+                    CategoryRow(categoryName: key, items: categories[key] ?? [])
                 }
                 .listRowInsets(EdgeInsets())
             }
             .listStyle(.inset)
             .navigationTitle("Featured")
             .toolbar {
-                        Button {
-                            showingProfile.toggle()
-                        } label: {
-                            Label("User Profile", systemImage: "person.crop.circle")
-                        }
-                    }
-                    .sheet(isPresented: $showingProfile) {
-                        ProfileHost()
-                            .environment(modelData)
-                    }
+                Button {
+                    showingProfile.toggle()
+                } label: {
+                    Label("User Profile", systemImage: "person.crop.circle")
+                }
+            }
+            /*.sheet(isPresented: $showingProfile) {
+                ProfileHost()
+            }*/
         } detail: {
             Text("Select a Landmark")
         }
@@ -38,5 +55,4 @@ struct CategoryHome: View {
 
 #Preview {
     CategoryHome()
-        .environment(ModelData())
 }

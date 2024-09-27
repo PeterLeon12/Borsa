@@ -1,5 +1,4 @@
-
-
+/*
 import SwiftUI
 
 struct GraphCapsule: View, Equatable {
@@ -33,3 +32,4 @@ struct GraphCapsule: View, Equatable {
         range: 10..<50,
         overallRange: 0..<100)
 }
+ */

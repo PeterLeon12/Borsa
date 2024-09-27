@@ -1,5 +1,3 @@
-
-
 import SwiftUI
 
 struct LandmarkRow: View {
@@ -7,10 +5,21 @@ struct LandmarkRow: View {
 
     var body: some View {
         HStack {
-            landmark.image
-                .resizable()
-                .frame(width: 50, height: 50)
-            Text(landmark.name)
+            // Load image from binary data
+            if let imageData = landmark.imageName, let uiImage = UIImage(data: imageData) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .frame(width: 50, height: 50)
+                    .cornerRadius(5)
+            } else {
+                // Fallback if no image is available
+                Image(systemName: "photo")
+                    .resizable()
+                    .frame(width: 50, height: 50)
+                    .cornerRadius(5)
+            }
+
+            Text(landmark.name ?? "Unknown Landmark")
 
             Spacer()
 

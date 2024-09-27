@@ -1,5 +1,5 @@
 
-
+/*
 import SwiftUI
 
 extension Animation {
@@ -73,4 +73,4 @@ func magnitude(of range: Range<Double>) -> Double {
         HikeGraph(hike: hike, path: \.pace)
             .frame(height: 200)
     }
-}
+ }*/

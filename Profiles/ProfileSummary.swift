@@ -1,3 +1,4 @@
+/*
 import SwiftUI
 
 
@@ -57,3 +58,4 @@ struct ProfileSummary: View {
     ProfileSummary(profile: Profile.default)
         .environment(ModelData())
 }
+ */

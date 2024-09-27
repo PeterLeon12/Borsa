@@ -1,5 +1,3 @@
-
-
 import SwiftUI
 
 struct CategoryRow: View {
@@ -31,8 +29,8 @@ struct CategoryRow: View {
 
 #Preview {
     let landmarks = ModelData().landmarks
-    return CategoryRow(
-        categoryName: landmarks[0].category.rawValue,
+    CategoryRow(
+        categoryName: landmarks[0].category ?? "Unknown Category", // Handle optional safely
         items: Array(landmarks.prefix(4))
     )
 }

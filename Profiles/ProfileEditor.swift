@@ -1,3 +1,4 @@
+/*
 import SwiftUI
 
 
@@ -42,4 +43,4 @@ struct ProfileEditor: View {
 
 #Preview {
     ProfileEditor(profile: .constant(.default))
-}
+ }*/

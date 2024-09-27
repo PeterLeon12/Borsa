@@ -4,9 +4,17 @@ import SwiftUI
 struct FeatureCard: View {
     var landmark: Landmark
 
+    // Computed property to convert Binary Data to UIImage
+    var featureImage: Image? {
+        if let imageData = landmark.imageName, let uiImage = UIImage(data: imageData) {
+            return Image(uiImage: uiImage)
+        } else {
+            return Image(systemName: "photo") // Fallback to a system image if no image is found
+        }
+    }
 
     var body: some View {
-        landmark.featureImage?
+        featureImage?
             .resizable()
             .overlay {
                 TextOverlay(landmark: landmark)
@@ -15,9 +23,9 @@ struct FeatureCard: View {
 }
 
 
+
 struct TextOverlay: View {
     var landmark: Landmark
-
 
     var gradient: LinearGradient {
         .linearGradient(
@@ -26,15 +34,15 @@ struct TextOverlay: View {
             endPoint: .center)
     }
 
-
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             gradient
             VStack(alignment: .leading) {
-                Text(landmark.name)
+                // Unwrap optional strings safely
+                Text(landmark.name ?? "Unknown Landmark")
                     .font(.title)
                     .bold()
-                Text(landmark.park)
+                Text(landmark.park ?? "Unknown Park")
             }
             .padding()
         }
@@ -42,8 +50,8 @@ struct TextOverlay: View {
     }
 }
 
-
 #Preview {
-    FeatureCard(landmark: ModelData().features[0])
+    let modelData = ModelData()
+    return FeatureCard(landmark: modelData.features[0])
         .aspectRatio(3 / 2, contentMode: .fit)
 }
