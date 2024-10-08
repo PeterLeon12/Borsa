@@ -2,7 +2,8 @@ import SwiftUI
 import MapKit
 
 struct LandmarkDetail: View {
-    var landmark: Landmark
+    @Environment(\.managedObjectContext) private var viewContext
+    @ObservedObject var landmark: Landmark
 
     // Computed property to retrieve the landmark's location coordinate
     var locationCoordinate: CLLocationCoordinate2D {
@@ -15,25 +16,50 @@ struct LandmarkDetail: View {
             MapView(coordinate: locationCoordinate)
                 .frame(height: 300)
 
-            Spacer(minLength: 130)
+            ZStack {
+                // Background layer: Blurred image
+                if let imageData = landmark.imageName, let uiImage = UIImage(data: imageData) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(height: 300)
+                        .clipped()
+                        .blur(radius: 5)
+                        .opacity(0.5)
+                }
 
-            // Convert the binary image data to a UIImage and then to a SwiftUI Image
-            if let imageData = landmark.imageName, let uiImage = UIImage(data: imageData) {
-                CircleImage(image: Image(uiImage: uiImage))
-                    .offset(y: -130)
-                    .padding(.bottom, -130)
-            } else {
-                // Fallback in case there's no image data
-                CircleImage(image: Image(systemName: "photo"))
-                    .offset(y: -130)
-                    .padding(.bottom, -130)
+                // Foreground layer: Circular image
+                if let imageData = landmark.imageName, let uiImage = UIImage(data: imageData) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 200)
+                        .clipShape(Circle())
+                        .overlay(
+                            Circle().stroke(Color.white, lineWidth: 4)
+                        )
+                        .shadow(radius: 7)
+                        .padding(.bottom, 20)
+                } else {
+                    // Fallback in case there's no image data
+                    CircleImage(image: Image(systemName: "photo"))
+                        .offset(y: -130)
+                        .padding(.bottom, -130)
+                }
             }
+            .padding(.bottom, 30)
 
             VStack(alignment: .leading) {
                 HStack {
                     Text(landmark.name ?? "Unknown Landmark")
                         .font(.title)
-                    FavoriteButton(isSet: .constant(landmark.isFavorite))
+
+                    Button(action: {
+                        toggleFavorite()
+                    }) {
+                        Image(systemName: landmark.isFavorite ? "star.fill" : "star")
+                            .foregroundColor(.yellow)
+                    }
                 }
 
                 HStack {
@@ -78,6 +104,16 @@ struct LandmarkDetail: View {
             MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving
         ])
     }
+
+    // Function to toggle favorite status and save it to Core Data
+    private func toggleFavorite() {
+        landmark.isFavorite.toggle()
+        do {
+            try viewContext.save()
+        } catch {
+            print("Failed to save favorite status: \(error.localizedDescription)")
+        }
+    }
 }
 
 #Preview {
@@ -93,5 +129,6 @@ struct LandmarkDetail: View {
     newLandmark.isFavorite = true
     newLandmark.landmarkDescription = "A beautiful national park."
 
-    return LandmarkDetail(landmark: newLandmark) // Explicitly returning the view
+    return LandmarkDetail(landmark: newLandmark)
+        .environment(\.managedObjectContext, context)
 }
