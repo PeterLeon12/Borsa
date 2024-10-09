@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct CategoryHome: View {
+    @EnvironmentObject var landmarkData: LandmarkData // Access the shared data
+
     // Fetch landmarks from Core Data
     @FetchRequest(
         entity: Landmark.entity(),
@@ -54,5 +56,7 @@ struct CategoryHome: View {
 }
 
 #Preview {
-    CategoryHome()
+    let context = PersistenceController.preview.container.viewContext
+    return CategoryHome()
+        .environment(\.managedObjectContext, context)
 }

@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct LandmarkRow: View {
+    @EnvironmentObject var landmarkData: LandmarkData // Access the shared data
+
     var landmark: Landmark
 
     var body: some View {

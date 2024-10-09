@@ -34,12 +34,13 @@ struct ImagePicker: UIViewControllerRepresentable {
             if provider.canLoadObject(ofClass: UIImage.self) {
                 provider.loadObject(ofClass: UIImage.self) { image, _ in
                     DispatchQueue.main.async {
-                        self.parent.image = image as? UIImage
-                        self.parent.imageData = (image as? UIImage)?.jpegData(compressionQuality: 1.0)
+                        if let uiImage = image as? UIImage {
+                            self.parent.image = uiImage
+                            self.parent.imageData = uiImage.jpegData(compressionQuality: 1.0)
+                        }
                     }
                 }
             }
         }
     }
 }
-

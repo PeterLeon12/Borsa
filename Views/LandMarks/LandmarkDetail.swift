@@ -2,8 +2,12 @@ import SwiftUI
 import MapKit
 
 struct LandmarkDetail: View {
+    @EnvironmentObject var landmarkData: LandmarkData // Access the shared data
     @Environment(\.managedObjectContext) private var viewContext
     @ObservedObject var landmark: Landmark
+    @State private var showEditView = false // State to show the edit view
+    @State private var showDeleteConfirmation = false // State to control the delete confirmation alert
+    @Environment(\.presentationMode) var presentationMode // For dismissing view
 
     // Computed property to retrieve the landmark's location coordinate
     var locationCoordinate: CLLocationCoordinate2D {
@@ -88,11 +92,52 @@ struct LandmarkDetail: View {
                         .cornerRadius(10)
                 }
                 .padding(.top)
+
+                // Edit and Delete buttons
+                HStack {
+                    Button(action: {
+                        showEditView.toggle() // Show the edit view
+                    }) {
+                        Label("Edit", systemImage: "pencil")
+                            .font(.headline)
+                            .foregroundColor(.blue)
+                            .padding()
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(10)
+                    }
+
+                    Spacer()
+
+                    Button(action: {
+                        showDeleteConfirmation = true // Trigger the delete confirmation alert
+                    }) {
+                        Label("Delete", systemImage: "trash")
+                            .font(.headline)
+                            .foregroundColor(.red)
+                            .padding()
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(10)
+                    }
+                }
+                .padding(.top)
             }
             .padding()
         }
         .navigationTitle(landmark.name ?? "Unknown Landmark")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showEditView) {
+            AddLandmarkView(landmark: landmark) // Pass landmark to edit
+        }
+        .alert(isPresented: $showDeleteConfirmation) {
+            Alert(
+                title: Text("Delete Landmark"),
+                message: Text("Are you sure you want to delete this landmark?"),
+                primaryButton: .destructive(Text("Delete")) {
+                    deleteLandmark() // Call the delete function if the user confirms
+                },
+                secondaryButton: .cancel()
+            )
+        }
     }
 
     // Function to open the Maps app with directions to the landmark
@@ -114,21 +159,39 @@ struct LandmarkDetail: View {
             print("Failed to save favorite status: \(error.localizedDescription)")
         }
     }
+
+    // Function to delete the landmark
+    private func deleteLandmark() {
+        viewContext.delete(landmark)
+        do {
+            try viewContext.save()
+            presentationMode.wrappedValue.dismiss() // Navigate back after deletion
+        } catch {
+            print("Failed to delete landmark: \(error.localizedDescription)")
+        }
+    }
 }
 
-#Preview {
-    // Add a dummy landmark to preview
-    let context = PersistenceController.preview.container.viewContext
-    let newLandmark = Landmark(context: context)
-    newLandmark.name = "Example Landmark"
-    newLandmark.latitude = 34.011286
-    newLandmark.longitude = -116.166868
-    newLandmark.imageName = Data() // You can add actual data for preview if needed
-    newLandmark.park = "Joshua Tree National Park"
-    newLandmark.state = "California"
-    newLandmark.isFavorite = true
-    newLandmark.landmarkDescription = "A beautiful national park."
 
-    return LandmarkDetail(landmark: newLandmark)
+#Preview {
+    // Create a mock view context
+    let context = PersistenceController.preview.container.viewContext
+
+    // Create a mock landmark for preview purposes
+    let previewLandmark = Landmark(context: context)
+    previewLandmark.name = "Preview Landmark"
+    previewLandmark.park = "Preview Park"
+    previewLandmark.state = "Preview State"
+    previewLandmark.latitude = 34.011286
+    previewLandmark.longitude = -116.166868
+    previewLandmark.landmarkDescription = "This is a beautiful national park used for preview purposes."
+    previewLandmark.isFavorite = true
+
+    // Mock image data (optional)
+    let image = UIImage(systemName: "photo")!
+    let imageData = image.pngData()
+    previewLandmark.imageName = imageData
+
+    return LandmarkDetail(landmark: previewLandmark)
         .environment(\.managedObjectContext, context)
 }

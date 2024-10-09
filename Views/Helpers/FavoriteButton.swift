@@ -3,6 +3,8 @@
 import SwiftUI
 
 struct FavoriteButton: View {
+    @EnvironmentObject var landmarkData: LandmarkData // Access the shared data
+
     @Binding var isSet: Bool
 
     var body: some View {

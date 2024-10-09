@@ -1,37 +1,31 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selection: Tab = .featured
-
-    enum Tab {
-        case featured
-        case list
-        case addLandmark // New tab case for adding a landmark
-    }
+    @StateObject var landmarkData = LandmarkData() // Use as shared data
 
     var body: some View {
-        TabView(selection: $selection) {
+        TabView {
             CategoryHome()
+                .environmentObject(landmarkData) // Pass the landmark data to all views that need it
                 .tabItem {
                     Label("Featured", systemImage: "star")
                 }
-                .tag(Tab.featured)
 
             LandmarkList()
+                .environmentObject(landmarkData) // Pass the landmark data
                 .tabItem {
                     Label("List", systemImage: "list.bullet")
                 }
-                .tag(Tab.list)
 
-            // New tab to add a landmark
             AddLandmarkView()
+                .environmentObject(landmarkData) // Also pass it to add/edit views
                 .tabItem {
                     Label("Add Landmark", systemImage: "plus.circle")
                 }
-                .tag(Tab.addLandmark)
         }
     }
 }
+
 
 #Preview {
     ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)

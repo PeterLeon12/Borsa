@@ -1,18 +1,31 @@
-//
-//  LandmarkData.swift
-//  LandMarks
-//
-//  Created by Timis Petre Leon on 08.10.2024.
-//
-
+import Foundation
+import CoreData
 import SwiftUI
 
-struct LandmarkData: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-    }
-}
+class LandmarkData: ObservableObject {
+    @Published var landmarks: [Landmark] = []
 
-#Preview {
-    LandmarkData()
+    // Initialize with data from Core Data or fetch from elsewhere
+    init() {
+        loadLandmarks()
+    }
+
+    func loadLandmarks() {
+        // Load the landmarks from Core Data
+        // Example fetch request here (modify as needed)
+        let fetchRequest: NSFetchRequest<Landmark> = Landmark.fetchRequest()
+        
+        do {
+            let context = PersistenceController.shared.container.viewContext
+            landmarks = try context.fetch(fetchRequest)
+        } catch {
+            print("Failed to fetch landmarks: \(error.localizedDescription)")
+        }
+    }
+
+    func updateLandmark(_ landmark: Landmark) {
+        if let index = landmarks.firstIndex(where: { $0.id == landmark.id }) {
+            landmarks[index] = landmark
+        }
+    }
 }

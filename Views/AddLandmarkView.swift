@@ -1,8 +1,13 @@
 import SwiftUI
 import CoreData
+import UIKit // To use UIImage and UIApplication
 
 struct AddLandmarkView: View {
+    @EnvironmentObject var landmarkData: LandmarkData // Access shared data
+
     @Environment(\.managedObjectContext) private var viewContext
+    var landmark: Landmark? = nil // Optional landmark for editing
+    
 
     // State variables for user input
     @State private var name = ""
@@ -14,15 +19,15 @@ struct AddLandmarkView: View {
     @State private var description = ""
     @State private var isFavorite = false
     @State private var isFeatured = false
-    @State private var selectedImage: UIImage? = nil
-    @State private var imageData: Data? = nil
+    @State private var selectedImage: UIImage? = nil // UIImage from UIKit
+    @State private var imageData: Data? = nil // Data type from Foundation
     @State private var showImagePicker = false
 
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 20) {
-                    Section(header: Text("Landmark Info")) {
+                    Section(header: Text("Landmark Info").font(.headline)) {
                         TextField("Name", text: $name)
                             .padding()
                             .background(Color(.systemGray6))
@@ -59,7 +64,9 @@ struct AddLandmarkView: View {
                             .padding()
                             .background(Color(.systemGray6))
                             .cornerRadius(8)
+                    }
 
+                    Section(header: Text("Settings").font(.headline)) {
                         Toggle("Favorite", isOn: $isFavorite)
                             .padding()
 
@@ -67,20 +74,25 @@ struct AddLandmarkView: View {
                             .padding()
                     }
 
-                    Section(header: Text("Add Image")) {
+                    Section(header: Text("Add Image").font(.headline)) {
                         if let image = selectedImage {
                             Image(uiImage: image)
                                 .resizable()
                                 .scaledToFit()
                                 .frame(height: 200)
+                                .padding()
                         }
+
                         Button("Choose Image") {
                             showImagePicker = true
                         }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(8)
                     }
 
                     Button("Save Landmark") {
-                        addNewLandmark()
+                        addOrUpdateLandmark()
                     }
                     .font(.headline)
                     .padding()
@@ -91,7 +103,22 @@ struct AddLandmarkView: View {
                 }
                 .padding()
             }
-            .navigationTitle("Add Landmark")
+            .navigationTitle(landmark == nil ? "Add Landmark" : "Edit Landmark") // Adjust title for editing
+            .onAppear {
+                if let landmark = landmark {
+                    // Populate fields with existing landmark data for editing
+                    name = landmark.name ?? ""
+                    category = landmark.category ?? ""
+                    city = landmark.city ?? ""
+                    state = landmark.state ?? ""
+                    latitude = landmark.latitude
+                    longitude = landmark.longitude
+                    description = landmark.landmarkDescription ?? ""
+                    isFavorite = landmark.isFavorite
+                    isFeatured = landmark.isFeatured
+                    imageData = landmark.imageName
+                }
+            }
             .sheet(isPresented: $showImagePicker) {
                 ImagePicker(image: $selectedImage, imageData: $imageData)
             }
@@ -101,43 +128,70 @@ struct AddLandmarkView: View {
         }
     }
 
-    // Function to save the landmark to Core Data
-    private func addNewLandmark() {
-        guard !name.isEmpty else {
-            // Show an alert or prompt if required fields are not filled
-            print("Landmark name is required.")
-            return
-        }
+    // Function to either add a new landmark or update an existing one
+    private func addOrUpdateLandmark() {
+        let landmarkToUpdate = landmark ?? Landmark(context: viewContext) // If no landmark, create new one
 
-        let newLandmark = Landmark(context: viewContext)
-        newLandmark.name = name
-        newLandmark.category = category
-        newLandmark.city = city
-        newLandmark.state = state
-        newLandmark.latitude = latitude
-        newLandmark.longitude = longitude
-        newLandmark.landmarkDescription = description
-        newLandmark.isFavorite = isFavorite
-        newLandmark.isFeatured = isFeatured
+        landmarkToUpdate.name = name
+        landmarkToUpdate.category = category
+        landmarkToUpdate.city = city
+        landmarkToUpdate.state = state
+        landmarkToUpdate.latitude = latitude
+        landmarkToUpdate.longitude = longitude
+        landmarkToUpdate.landmarkDescription = description
+        landmarkToUpdate.isFavorite = isFavorite
+        landmarkToUpdate.isFeatured = isFeatured
 
-        if let imageData = imageData {
-            newLandmark.imageName = imageData
-        }
+        landmarkToUpdate.name = name // Other fields...
 
-        // Save the landmark
-        do {
-            try viewContext.save()
-        } catch {
-            print("Failed to save landmark: \(error.localizedDescription)")
-        }
-    }
+           // Update image if one was selected
+           if let imageData = imageData {
+               landmarkToUpdate.imageName = imageData
+           }
 
-    // Function to dismiss keyboard when tapping outside the keyboard area
+           // Save changes to Core Data
+           do {
+               try viewContext.save()
+               landmarkData.updateLandmark(landmarkToUpdate) // Update shared data
+           } catch {
+               print("Failed to save landmark: \(error.localizedDescription)")
+           }
+       }
     private func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
-
 #Preview {
-    AddLandmarkView()
+    // Create a mock view context
+    let context = PersistenceController.preview.container.viewContext
+
+    // Create a mock landmark for preview purposes (for the edit scenario)
+    let previewLandmark = Landmark(context: context)
+    previewLandmark.name = "Preview Landmark"
+    previewLandmark.category = "Preview Category"
+    previewLandmark.city = "Preview City"
+    previewLandmark.state = "Preview State"
+    previewLandmark.latitude = 34.011286
+    previewLandmark.longitude = -116.166868
+    previewLandmark.landmarkDescription = "This is a description for a preview landmark."
+    previewLandmark.isFavorite = true
+    previewLandmark.isFeatured = false
+
+    // Mock image data (optional)
+    if let image = UIImage(systemName: "photo") {
+        let imageData = image.pngData()
+        previewLandmark.imageName = imageData
+    }
+
+    return Group {
+        // Preview for adding a new landmark
+        AddLandmarkView()
+            .environment(\.managedObjectContext, context)
+            .previewDisplayName("Add New Landmark")
+
+        // Preview for editing an existing landmark
+        AddLandmarkView(landmark: previewLandmark)
+            .environment(\.managedObjectContext, context)
+            .previewDisplayName("Edit Existing Landmark")
+    }
 }

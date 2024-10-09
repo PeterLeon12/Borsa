@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct CategoryRow: View {
+    @EnvironmentObject var landmarkData: LandmarkData // Access the shared data
     var categoryName: String
     var items: [Landmark]
 
