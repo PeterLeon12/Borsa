@@ -155,6 +155,7 @@ struct LandmarkDetail: View {
         landmark.isFavorite.toggle()
         do {
             try viewContext.save()
+            landmarkData.loadLandmarks() // Refresh the list in real-time
         } catch {
             print("Failed to save favorite status: \(error.localizedDescription)")
         }
@@ -166,6 +167,7 @@ struct LandmarkDetail: View {
         do {
             try viewContext.save()
             presentationMode.wrappedValue.dismiss() // Navigate back after deletion
+            landmarkData.loadLandmarks() // Refresh the list after deletion
         } catch {
             print("Failed to delete landmark: \(error.localizedDescription)")
         }

@@ -38,14 +38,14 @@ struct CategoryHome: View {
                 .listRowInsets(EdgeInsets())
             }
             .listStyle(.inset)
-            .navigationTitle("Featured")
-            .toolbar {
+           /// .navigationTitle("Featured")
+          /*  .toolbar {
                 Button {
                     showingProfile.toggle()
                 } label: {
                     Label("User Profile", systemImage: "person.crop.circle")
                 }
-            }
+            } */
             /*.sheet(isPresented: $showingProfile) {
                 ProfileHost()
             }*/
